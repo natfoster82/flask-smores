@@ -1,5 +1,6 @@
 __pycache__/
 .idea/
-Flask_Smores.egg-info/
-venv/
-dist/
+/Flask_Smores.egg-info/
+/venv/
+/dist/
+/build/
