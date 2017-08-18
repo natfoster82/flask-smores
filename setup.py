@@ -9,8 +9,8 @@ from setuptools import setup
 
 setup(
     name='Flask-Smores',
-    version='0.1',
-    url='',
+    version='0.1.1',
+    url='https://github.com/natfoster82/flask-smores',
     license='BSD',
     author='Nat Foster',
     author_email='nat.foster@gmail.com',
