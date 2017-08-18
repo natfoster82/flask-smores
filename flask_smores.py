@@ -137,6 +137,7 @@ class CaseInsensitiveDict(collections.MutableMapping):
 def schema_dict(schema):
     schema_dict = {}
     for field_name, field in schema.fields.items():
+        # TODO: handle nested
         field_key = field.load_from or field_name
         field_dict = {
             'required': field.required if field.required else False,
