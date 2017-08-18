@@ -1,3 +1,5 @@
 __pycache__/
 .idea/
 Flask_Smores.egg-info/
+venv/
+dist/

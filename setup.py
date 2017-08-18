@@ -17,9 +17,6 @@ setup(
     description='Validate inputs and document routes using marshmallow schemas',
     long_description=__doc__,
     py_modules=['flask_smores'],
-    # if you would be using a package instead use packages instead
-    # of py_modules:
-    # packages=['flask_sqlite3'],
     zip_safe=False,
     include_package_data=True,
     platforms='any',
