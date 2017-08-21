@@ -1,6 +1,7 @@
 from flask import jsonify, request, current_app
 import collections
 from functools import wraps
+import inspect
 
 
 # Find the stack on which we want to store the database connection.
@@ -151,6 +152,9 @@ def schema_dict(schema):
 
 
 def use_input_schema(schema):
+    if inspect.isclass(schema):
+        schema = schema()
+
     def view_decorator(func):
         func._uses_smores = True
         func._input_schema = schema
@@ -201,6 +205,9 @@ def use_input_schema(schema):
 
 
 def use_output_schema(schema):
+    if inspect.isclass(schema):
+        schema = schema()
+
     def view_decorator(func):
         func._uses_smores = True
         func._output_schema = schema
