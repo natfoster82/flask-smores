@@ -40,11 +40,12 @@ class Smores(object):
                         methods = [x for x in possible_methods if x in rule.methods]
                         doc_dict = {}
                         if view_func.__doc__:
-                            doc_dict['description'] = view_func.__doc__
+                            stripped_docstring = ' '.join((x.strip() for x in view_func.__doc__.strip().split('\n')))
+                            doc_dict['description'] = stripped_docstring
                         if getattr(view_func, '_input_schema', None):
                             doc_dict['inputs'] = schema_dict(view_func._input_schema)
                         if getattr(view_func, '_output_schema', None):
-                            doc_dict['outputs'] = schema_dict(view_func._output_schema)
+                            doc_dict['outputs'] = schema_dict(view_func._output_schema, is_input=False)
                         for method in methods:
                             try:
                                 app._api_docs[rule.rule][method] = doc_dict
@@ -135,15 +136,16 @@ class CaseInsensitiveDict(collections.MutableMapping):
         return str(dict(self.items()))
 
 
-def schema_dict(schema):
+def schema_dict(schema, is_input=True):
     schema_dict = {}
     for field_name, field in schema.fields.items():
         # TODO: handle nested
         field_key = field.load_from or field_name
         field_dict = {
-            'required': field.required if field.required else False,
             'type': field.__class__.__name__
         }
+        if is_input:
+            field_dict['required'] = field.required
         if field.default:
             field_dict['default'] = field.default
         field_dict.update(field.metadata)
