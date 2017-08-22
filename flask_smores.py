@@ -187,7 +187,9 @@ def use_input_schema(schema):
                         pass
                 else:
                     try:
-                        data[field_name] = getattr(request, REQUEST_ATTR_MAP[found_in]).get(field_name)
+                        value = getattr(request, REQUEST_ATTR_MAP[found_in]).get(field_name)
+                        if value is not None:
+                            data[field_name] = value
                     except AttributeError:
                         pass
 
