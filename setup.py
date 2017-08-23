@@ -11,7 +11,7 @@ setup(
     name='Flask-Smores',
     version='0.1.2',
     url='https://github.com/natfoster82/flask-smores',
-    license='BSD',
+    license='MIT',
     author='Nat Foster',
     author_email='nat.foster@gmail.com',
     description='Validate inputs and document routes using marshmallow schemas',
