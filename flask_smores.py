@@ -180,9 +180,12 @@ def use_input_schema(schema):
                 pass
 
             for field_name, found_in in found_ins.items():
+                # TODO: make more efficient. right now it sets these keys twice
                 if found_in == 'json':
                     try:
-                        data[field_name] = json.get(field_name)
+                        value = json.get(field_name)
+                        if value is not None:
+                            data[field_name] = value
                     except AttributeError:
                         pass
                 else:
@@ -195,12 +198,19 @@ def use_input_schema(schema):
 
             result = schema.load(data=data)
             if result.errors:
-                return jsonify(errors=result.errors), 400
-            # validate and return 400 if invalid
+                response_data = {
+                    'errors': result.errors
+                }
+                route_docs = current_app._api_docs.get(request.url_rule.rule, {}).get(request.method)
+                if route_docs:
+                    response_data['route_docs'] = route_docs
+                return jsonify(response_data), 400
+
             request.input_obj = result.data
-            try:
+            view_args = inspect.getargspec(func).args
+            if 'input_obj' in view_args:
                 return func(input_obj=result.data, *args, **kwargs)
-            except TypeError:
+            else:
                 return func(*args, **kwargs)
 
         return decorated_view
