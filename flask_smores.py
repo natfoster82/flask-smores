@@ -147,7 +147,7 @@ def schema_dict(schema, is_input=True):
         if is_input:
             field_dict['required'] = field.required
         if field.missing:
-            field_dict['missing'] = field.default
+            field_dict['missing'] = field.missing
         field_dict.update(field.metadata)
         schema_dict[field_key] = field_dict
     return schema_dict
