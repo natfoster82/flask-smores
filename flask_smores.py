@@ -172,7 +172,14 @@ def use_input_schema(schema):
             data.update(request.cookies)
             data.update(request.args)
             data.update(request.view_args)
-            json = request.get_json(force=True, silent=True)
+            if request.method in {'POST', 'PUT', 'PATCH'}:
+                json = request.get_json(force=True)
+                if type(json) != dict:
+                    json = {
+                        'json_body': json
+                    }
+            else:
+                json = {}
 
             try:
                 data.update(json)
