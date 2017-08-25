@@ -20,15 +20,16 @@ class Smores(object):
             self.init_app(app)
 
     def init_app(self, app):
-        app.config.setdefault('CACHE_API_DOCS', True)
-        app.config.setdefault('API_DOCS_RULE', '/api_docs')
+        app.config.setdefault('SMORES_CACHE_API_DOCS', True)
+        app.config.setdefault('SMORES_API_DOCS_RULE', '/api_docs')
+        app.config.setdefault('SMORES_RECURSION_DEPTH', 5)
 
-        if app.config.get('CACHE_API_DOCS'):
+        if app.config.get('SMORES_CACHE_API_DOCS'):
             def api_docs():
                 api_docs = getattr(app, '_api_docs', {})
                 return jsonify(api_docs)
 
-            app.add_url_rule(app.config['API_DOCS_RULE'], 'api_docs', api_docs)
+            app.add_url_rule(app.config['SMORES_API_DOCS_RULE'], 'smores_api_docs', api_docs)
 
             @app.before_first_request
             def cache_api_docs():
@@ -43,9 +44,9 @@ class Smores(object):
                             stripped_docstring = ' '.join((x.strip() for x in view_func.__doc__.strip().split('\n')))
                             doc_dict['description'] = stripped_docstring
                         if getattr(view_func, '_input_schema', None):
-                            doc_dict['inputs'] = schema_dict(view_func._input_schema)
+                            doc_dict['inputs'] = make_schema_dict(view_func._input_schema, max_depth=app.config['SMORES_RECURSION_DEPTH'])
                         if getattr(view_func, '_output_schema', None):
-                            doc_dict['outputs'] = schema_dict(view_func._output_schema, is_input=False)
+                            doc_dict['outputs'] = make_schema_dict(view_func._output_schema, is_input=False, max_depth=app.config['SMORES_RECURSION_DEPTH'])
                         for method in methods:
                             try:
                                 app._api_docs[rule.rule][method] = doc_dict
@@ -136,14 +137,22 @@ class CaseInsensitiveDict(collections.MutableMapping):
         return str(dict(self.items()))
 
 
-def schema_dict(schema, is_input=True):
+def make_schema_dict(schema, is_input=True, current_depth=0, max_depth=5):
     schema_dict = {}
     for field_name, field in schema.fields.items():
-        # TODO: handle nested
         field_key = field.load_from or field_name
+        field_type = field.__class__.__name__
         field_dict = {
-            'type': field.__class__.__name__
+            'type': field_type
         }
+        try:
+            nested_schema = field.nested
+            if inspect.isclass(nested_schema):
+                nested_schema = nested_schema()
+            if current_depth < max_depth:
+                field_dict['schema'] = make_schema_dict(nested_schema, is_input=is_input, current_depth=current_depth + 1, max_depth=max_depth)
+        except AttributeError:
+            pass
         if is_input:
             field_dict['required'] = field.required
         if field.missing:
