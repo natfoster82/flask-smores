@@ -145,6 +145,7 @@ def make_schema_dict(schema, is_input=True, current_depth=0, max_depth=5):
         field_dict = {
             'type': field_type
         }
+        # TODO handle list fields
         try:
             nested_schema = field.nested
             if inspect.isclass(nested_schema):
