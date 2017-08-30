@@ -138,6 +138,8 @@ class CaseInsensitiveDict(collections.MutableMapping):
 
 
 def make_schema_dict(schema, is_input=True, current_depth=0, max_depth=5):
+    if inspect.isclass(schema):
+        schema = schema()
     schema_dict = {}
     for field_name, field in schema.fields.items():
         field_key = field.load_from or field_name
