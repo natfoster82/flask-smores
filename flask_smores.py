@@ -1,4 +1,5 @@
 from flask import jsonify, request, current_app
+from marshmallow import missing
 import collections
 from functools import wraps
 import inspect
@@ -158,8 +159,10 @@ def make_schema_dict(schema, is_input=True, current_depth=0, max_depth=5):
             pass
         if is_input:
             field_dict['required'] = field.required
-        if field.missing:
+        if field.missing != missing:
             field_dict['missing'] = field.missing
+        if field.default != missing:
+            field_dict['default'] = field.default
         field_dict.update(field.metadata)
         schema_dict[field_key] = field_dict
     return schema_dict
