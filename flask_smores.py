@@ -46,6 +46,8 @@ class Smores(object):
                             doc_dict['description'] = stripped_docstring
                         if getattr(view_func, '_input_schema', None):
                             doc_dict['inputs'] = make_schema_dict(view_func._input_schema, max_depth=app.config['SMORES_RECURSION_DEPTH'])
+                            if hasattr(view_func._input_schema, 'smores_example'):
+                                doc_dict['example'] = view_func._input_schema.smores_example
                         if getattr(view_func, '_output_schema', None):
                             doc_dict['outputs'] = make_schema_dict(view_func._output_schema, is_input=False, max_depth=app.config['SMORES_RECURSION_DEPTH'])
                         for method in methods:
