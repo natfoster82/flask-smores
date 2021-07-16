@@ -9,7 +9,7 @@ from setuptools import setup
 
 setup(
     name='Flask-Smores',
-    version='0.2.2',
+    version='0.2.3',
     url='https://github.com/natfoster82/flask-smores',
     license='MIT',
     author='Nat Foster',
