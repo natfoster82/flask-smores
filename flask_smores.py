@@ -1,5 +1,5 @@
 from flask import jsonify, request, current_app
-from marshmallow import missing
+from marshmallow import missing, EXCLUDE, ValidationError, fields
 import collections
 from functools import wraps
 import inspect
@@ -169,6 +169,13 @@ def make_schema_dict(schema, is_input=True, current_depth=0, max_depth=5):
         schema_dict[field_key] = field_dict
     return schema_dict
 
+def set_unknown_all(schema):
+    schema.unknown = EXCLUDE
+    for field in schema.fields.values():
+            if isinstance(field, fields.Nested):
+                set_unknown_all(field.schema)
+
+    return schema
 
 def use_input_schema(schema):
     if inspect.isclass(schema):
@@ -220,20 +227,24 @@ def use_input_schema(schema):
                     except AttributeError:
                         pass
 
-            result = schema.load(data=data)
-            if result.errors:
+            set_unknown_all(schema)
+
+            try:
+                data = schema.load(data=data)
+            except ValidationError:
+                errors = schema.validate(data)
                 response_data = {
-                    'errors': result.errors
+                    'errors': errors
                 }
                 route_docs = current_app._api_docs.get(request.url_rule.rule, {}).get(request.method)
                 if route_docs:
                     response_data['route_docs'] = route_docs
                 return jsonify(response_data), 400
 
-            request.input_obj = result.data
+            request.input_obj = data
             view_args = inspect.getargspec(func).args
             if 'input_obj' in view_args:
-                return func(input_obj=result.data, *args, **kwargs)
+                return func(input_obj=data, *args, **kwargs)
             else:
                 return func(*args, **kwargs)
 
